@@ -127,14 +127,17 @@ while(True):
     count += 1
     ret, image_np = cap.read()
     if count%5 == 0:
+        start_time = timeit.default_timer()
 
         # Loop Variables
         wid = []
         hei = []
+        head_hei = []
         px  = []
         py =  []
         pxa = []
         pya = []
+        pyha = []
 
         # with detection_graph.as_default():
         with tf.Session(graph=detection_graph) as sess:
@@ -203,13 +206,15 @@ while(True):
             df5['ob_mid_y'] = df5['ob_hgt_y'] / 2
             df5['y_loc'] = df5["y_min_t"] + df5['ob_mid_y']
             # Head
-            df5['ob_head_y'] = df5['ob_hgt_y'] * 7.5 / 2
+            df5['ob_head_y'] = df5['ob_hgt_y'] / 7.5 / 2
+
             df5['y_head_loc'] = df5["y_min_t"] + df5['ob_head_y']
+
 
             # Find object degree of angle, data is sorted by score, select person with highest score
             df5['object_x_angle'] = df5['x_loc'].apply(lambda x: -(imageWidthCenter - x) * pixelDegreeHorizontal)
-            df5['object_y_angle'] = df5['y_loc'].apply(lambda x: -(imageHeightCenter - x) * pixelDegreeHorizontal)
-            df5['head_y_angle'] = df5['y_head_loc'].apply(lambda x: -(imageHeightCenter - x) * pixelDegreeHorizontal)
+            df5['object_y_angle'] = df5['y_loc'].apply(lambda x: (imageHeightCenter - x) * pixelDegreeVertical)
+            df5['head_y_angle'] = df5['y_head_loc'].apply(lambda x: (imageHeightCenter - x) * pixelDegreeVertical)
 
             df6 = df5.loc[(df5['classes'] == 1 ) %  (df5['scores'] > person_threshold)]
             #df6 = df6.loc[df6['scores'] > 0.80]
@@ -233,8 +238,12 @@ while(True):
                 VAOB = df6.iloc[i]['object_y_angle']
                 VAOB_str = str(round(VAOB, 4))
 
-                # print df6.head()
-                # print imageHeight, imageWidth
+                head_AOB = df6.iloc[i]['head_y_angle']
+                head_size = df6.iloc[i]['ob_head_y']
+                head_y  = df6.iloc[i]['y_head_loc']
+#                 print y,h,VAOB
+#                 print head_y, head_size,head_AOB
+
 
                 #labelBuffer = int(df6.iloc[0]['y_min_t']) - int(df6.iloc[0]['ob_hgt_y'] * 0.1)
 
@@ -249,21 +258,22 @@ while(True):
                 #cv2.rectangle(image_np, (x,y), (x+w, y+halfBody), (0, 255, 0), 2)
                 #cv2.imwrite('save_image/' + "frame%d.jpg" % count, roi)
 
-                #print imageWidth, imageHeight, x, y, w, h, halfBody, df6.iloc[i]['scores']
-                #print HAOB_str, VAOB_str
 
                 wid.append(w)
                 hei.append(h)
+                head_hei.append(head_size)
                 px.append(x)
                 py.append(y)
                 pxa.append(HAOB)
                 pya.append(VAOB)
+                pyha.append(head_AOB)
                 #print boxes
 
 
 
        # print wid, hei, px, py
         sess.close()
+        print 'Took {} seconds to find people in image'.format(timeit.default_timer() - start_time)
 
 
         #         cv2.imshow("Presentation Tracker", cv2.resize(roi, (640, 480)))
@@ -281,16 +291,16 @@ while(True):
         # In[2]:
 
 
+        start_time = timeit.default_timer()
 
         for person in range(0,5):
 
             with tf.Session() as sess2:
-                start_time = timeit.default_timer()
 
                 # Feed the image_data as input to the graph and get first prediction
                 softmax_tensor = sess2.graph.get_tensor_by_name('final_result:0')
 
-                print 'Took {} seconds to feed data to graph'.format(timeit.default_timer() - start_time)
+
 
                 # while True:
                 #             frame = grabVideoFeed()
@@ -307,34 +317,20 @@ while(True):
                 numpy_frame = cv2.normalize(numpy_frame.astype('float'), None, -0.5, .5, cv2.NORM_MINMAX)
                 numpy_final = np.expand_dims(numpy_frame, axis=0)
 
-                start_time = timeit.default_timer()
 
-                # This takes 2-5 seconds as well
+                # make prediciton
                 predictions = sess2.run(softmax_tensor, {'Mul:0': numpy_final})
+
                 score = predictions.item(1)
                 gunScore = str(score)
-                # print(predictions.item(1))
 
 
-                print 'Took {} seconds to perform prediction'.format(timeit.default_timer() - start_time)
-
-                start_time = timeit.default_timer()
-
-                # Sort to show labels of first prediction in order of confidence
-                top_k = predictions[0].argsort()[-len(predictions[0]):][::-1]
-
-                print 'Took {} seconds to sort the predictions'.format(timeit.default_timer() - start_time)
-
-
-
-                print '********* Session Ended *********'
-                font = cv2.FONT_HERSHEY_SIMPLEX
                 #cv2.rectangle(image_np, (px[person],py[person]), (px[person]+wid[person], py[person]+hei[person]), (0, 0, 255), 2)
                 #cv2.rectangle(image_np, (px[person],py[person]), (px[person]+wid[person], py[person]+hei[person]), (0, 255, 0), 2)
 
                 if score > person_gun_threshold:
                     person_count += 1
-                    cv2.rectangle(image_np, (px[person],py[person]), (px[person]+wid[person], py[person]+hei[person]), (0, 0, 255), 10)
+                    cv2.rectangle(image_np, (px[person],py[person]), (px[person]+wid[person], py[person]+ (int(head_hei[person]) * 2)), (0, 0, 255), 10)
                     labelBuffer = int(py[person]) - int(hei[person] * 0.1)
 
                     # print
@@ -344,13 +340,19 @@ while(True):
 
                     cv2.imwrite('save_image/' + "frame%d.jpg" % person_count, image_np)
                     print("Horizontal Angle" + str(pxa[person]) )
-                    print(" Vertical Angle" + str(pya[person]))
+                    print(" Vertical Angle " + str(pya[person]))
+                    print(" Head Vertical Angle " + str(pyha[person]))
 
                 #cv2.putText(frame, gunScore, (10, 200), font, 0.8, (0, 255, 0), 2)
                 sess2.close()
+                print 'Took {} seconds to perform image recognition on people found'.format(timeit.default_timer() - start_time)
 
         # Display the resulting frame
         cv2.imshow('frame',cv2.resize(image_np, (1024, 768)))
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
+
+
+#                 print y,h,VAOB
+#                 print head_y, head_size,head_AOB
