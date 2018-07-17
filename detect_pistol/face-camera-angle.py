@@ -59,7 +59,7 @@ os.chdir("/tensorflow/models/research/object_detection/")
 from utils import label_map_util
 from utils import visualization_utils as vis_util
 
-##################### Model preparation ###############################
+##################### Model Preparation ###############################
 
 # ## Variables
 #
@@ -119,9 +119,22 @@ def load_image_into_numpy_array(image):
     return np.array(image.getdata()).reshape(
         (im_height, im_width, 3)).astype(np.uint8)
 
+
+
+
+#######################################################################
+############# Perform object Detection and Recognition ################
+#######################################################################
+
+
+
+################# Person Object Detection #############################
+
 count = 1
 person_count = 1
 
+
+# Loop Frame by Frame
 while(True):
     # Capture frame-by-frame
     count += 1
@@ -286,9 +299,7 @@ while(True):
 
 
 
-        # coding: utf-8
-
-        # In[2]:
+##################### Perform Pistol Draw Recognition #######################
 
 
         start_time = timeit.default_timer()
