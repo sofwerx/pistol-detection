@@ -50,5 +50,5 @@ OUTSIDE_NORTH_EAST
 DIRTYWERX_RAMP
 
 ```
-python pistol-detection.py RECEPTION_EAST 100
+python person-camera.py RECEPTION_EAST 100
 ```
