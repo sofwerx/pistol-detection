@@ -1,3 +1,9 @@
+
+# coding: utf-8
+
+# In[7]:
+
+
 import numpy as np
 import os
 import six.moves.urllib as urllib
@@ -19,6 +25,7 @@ from io import StringIO
 from matplotlib import pyplot as plt
 from PIL import Image as img
 from IPython.display import Image, display, clear_output
+from elasticsearch import Elasticsearch
 
 # Hold warnings
 import warnings
@@ -43,6 +50,18 @@ OUTSIDE_NORTH_WEST="rtsp://admin:1qazxsw2!QAZXSW@@datascience.opswerx.org:20050"
 OUTSIDE_NORTH="rtsp://admin:1qazxsw2!QAZXSW@@datascience.opswerx.org:20051"
 OUTSIDE_NORTH_EAST="rtsp://admin:1qazxsw2!QAZXSW@@datascience.opswerx.org:20052"
 DIRTYWERX_RAMP="rtsp://admin:1qazxsw2!QAZXSW@@datascience.opswerx.org:20053"
+
+# Setup ES 
+try:
+    es = Elasticsearch(
+        [
+            'https://elastic:diatonouscoggedkittlepins@elasticsearch.orange.opswerx.org:443'
+        ],
+        verify_certs=True
+    )
+    print("ES - Connected.")
+except Exception as ex:
+    print("Error: ", ex)
 
 
 # GPU Percentage
@@ -358,6 +377,38 @@ while(cap.isOpened()):
                         # print
                         font = cv2.FONT_HERSHEY_SIMPLEX
                         cv2.putText(image_np, gunScore, (int(px[person]), labelBuffer), font, 0.8, (0, 255, 0), 2)
+                        
+                         # Package bounding box info for ES
+                        xmin = px[person] 
+                        xmax = (px[person] + wid[person])
+                        ymin = py[person] 
+                        ymax = (py[person] + (int(head_hei[person] * 2)))
+                        
+                                            
+                        tdoc = {
+                            'timestamp': datetime.now(),
+                            'content': 'Video information',
+                            'text': 'Object detected.',
+                            'xmin': xmin,
+                            'xmax': xmax,
+                            'ymin': ymin,
+                            'ymax': ymax,
+                         }
+                    
+                        # Send results to ES
+                        if url == RECEPTION_EAST:
+                            res = es.index(index="reception-east", doc_type="_doc", body=tdoc)
+                            print('ES document sent.')
+                            print(tdoc)
+                        elif url == RECEPTION_WEST:
+                            res = es.index(index="reception-west", doc_type="_doc", body=tdoc)
+                            print('ES document sent.')
+                            print(tdoc)
+                        elif url == OUTSIDE_WEST:
+                            res = es.index(index="outside-west", doc_type="_doc", body=tdoc)
+                            print('ES document sent.')
+                            print(tdoc)
+                        
 
                         # Save Full Image and Save Object Image
                         #cv2.imwrite('/tf_files/save_image/'+ str((sys.argv)[1]) +"-frame%d.jpg" % person_count, image_np)
@@ -386,3 +437,4 @@ while(cap.isOpened()):
 cap.release()
 out.release()
 cv2.destroyAllWindows()        
+

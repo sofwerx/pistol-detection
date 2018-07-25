@@ -14,7 +14,7 @@ RUN apt-get install -y protobuf-compiler \
   python2.7-dev \
   python-tk 
   
- RUN pip install opencv-python==3.4.0.12 requests
+ RUN pip install opencv-python==3.4.0.12 requests elasticsearch
   
 
 # change to tensorflow dir
