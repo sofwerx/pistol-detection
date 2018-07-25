@@ -1,4 +1,4 @@
-# assault-rifle-detection
+# pistol-detection
 
 ```
 git clone https://github.com/sofwerx/assault-rifle-detection.git $HOME/Documents/pistol-detection
