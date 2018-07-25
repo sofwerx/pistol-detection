@@ -50,6 +50,8 @@ OUTSIDE_NORTH_WEST="rtsp://admin:1qazxsw2!QAZXSW@@datascience.opswerx.org:20050"
 OUTSIDE_NORTH="rtsp://admin:1qazxsw2!QAZXSW@@datascience.opswerx.org:20051"
 OUTSIDE_NORTH_EAST="rtsp://admin:1qazxsw2!QAZXSW@@datascience.opswerx.org:20052"
 DIRTYWERX_RAMP="rtsp://admin:1qazxsw2!QAZXSW@@datascience.opswerx.org:20053"
+LOCAL="/tensorflow/models/research/object_detection/vid.mp4"
+
 
 # Setup ES 
 try:
@@ -382,11 +384,11 @@ while(cap.isOpened()):
                         xmin = px[person] 
                         xmax = (px[person] + wid[person])
                         ymin = py[person] 
-                        ymax = (py[person] + (int(head_hei[person] * 2)))
+                        ymax = (py[person] + hei[person])
                         
                                             
                         tdoc = {
-                            'timestamp': datetime.now(),
+                            #'timestamp': datetime.now(),
                             'content': 'Video information',
                             'text': 'Object detected.',
                             'xmin': xmin,
@@ -408,8 +410,11 @@ while(cap.isOpened()):
                             res = es.index(index="outside-west", doc_type="_doc", body=tdoc)
                             print('ES document sent.')
                             print(tdoc)
-                        
-
+                        elif url == LOCAL:
+                            res = es.index(index="test", doc_type="_doc", body=tdoc)
+                            print('ES document sent.')
+                            print(tdoc)
+                            
                         # Save Full Image and Save Object Image
                         #cv2.imwrite('/tf_files/save_image/'+ str((sys.argv)[1]) +"-frame%d.jpg" % person_count, image_np)
                         #cv2.imwrite('/tf_files/save_threat_image/' + str((sys.argv)[1]) + "-frame%d.jpg" % person_count, roi)
