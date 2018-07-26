@@ -1,10 +1,8 @@
-
 # coding: utf-8
-
-# In[7]:
-
-
-import numpy as np
+########################################################################################
+#### Ctrl-f '#!!!' to find lines that may need to be changed, depending on host.    ####
+#### As is, this script runs on the container built by the Dockerfile in this repo. ####
+########################################################################################
 import os
 import six.moves.urllib as urllib
 import sys
@@ -19,6 +17,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import sys
+import numpy as np
 
 from collections import defaultdict
 from io import StringIO
@@ -26,6 +25,7 @@ from matplotlib import pyplot as plt
 from PIL import Image as img
 from IPython.display import Image, display, clear_output
 from elasticsearch import Elasticsearch
+from datetime import datetime
 
 # Hold warnings
 import warnings
@@ -50,7 +50,7 @@ OUTSIDE_NORTH_WEST="rtsp://admin:1qazxsw2!QAZXSW@@datascience.opswerx.org:20050"
 OUTSIDE_NORTH="rtsp://admin:1qazxsw2!QAZXSW@@datascience.opswerx.org:20051"
 OUTSIDE_NORTH_EAST="rtsp://admin:1qazxsw2!QAZXSW@@datascience.opswerx.org:20052"
 DIRTYWERX_RAMP="rtsp://admin:1qazxsw2!QAZXSW@@datascience.opswerx.org:20053"
-LOCAL="/tensorflow/models/research/object_detection/vid.mp4"
+TEST="/tensorflow/models/research/object_detection/vid.mp4" #!!!
 
 
 # Setup ES 
@@ -67,11 +67,11 @@ except Exception as ex:
 
 
 # GPU Percentage
-gpuAmount = int((sys.argv)[2]) * 0.1
+gpuAmount = int((sys.argv)[2]) * 0.1 #!!!
 
 
 # Camera Selection
-url = globals()[str((sys.argv)[1])]
+url = globals()[str((sys.argv)[1])] #!!!
 print url
 
 
@@ -83,23 +83,13 @@ person_gun_threshold = 0.60
 # Intialize Tensorflow session and gpu memory management
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
-config.gpu_options.per_process_gpu_memory_fraction = gpuAmount
+config.gpu_options.per_process_gpu_memory_fraction = gpuAmount #!!!
 session = tf.Session(config=config)
 
-os.chdir("/tensorflow/models/research/object_detection/")
+os.chdir("/tensorflow/models/research/object_detection/") #!!!
 
 # Get Video and dimensions
-#cap = cv2.VideoCapture('draw9.mp4')
-
-
-
-
-
-
-
-
-#url = "rtsp://admin:1qazxsw2!QAZXSW@@datascience.opswerx.org:20044"
-cap = cv2.VideoCapture(url)
+cap = cv2.VideoCapture(url) #!!!
 print cap
 
 width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -108,7 +98,7 @@ print width, height
 
 # This is needed since the notebook is stored in the object_detection folder.
 sys.path.append("..")
-os.chdir("/tensorflow/models/research/object_detection/")
+os.chdir("/tensorflow/models/research/object_detection/") #!!!
 
 # ## Object detection imports
 # Here are the imports from the object detection module.
@@ -155,7 +145,7 @@ categories = label_map_util.convert_label_map_to_categories(label_map, max_num_c
 category_index = label_map_util.create_category_index(categories)
 
 # Object Recognition model
-label_lines = [line.rstrip() for line in tf.gfile.GFile("/tf_files/retrained_labels.txt")]
+label_lines = [line.rstrip() for line in tf.gfile.GFile("/tf_files/retrained_labels.txt")] #!!!
 
 
 def initialSetup():
@@ -164,7 +154,7 @@ def initialSetup():
 
     # This takes 2-5 seconds to run
     # Unpersists graph from file
-    with tf.gfile.FastGFile('/tf_files/retrained_graph.pb', 'rb') as h:
+    with tf.gfile.FastGFile('/tf_files/retrained_graph.pb', 'rb') as h: #!!!
         graph_def = tf.GraphDef()
         graph_def.ParseFromString(h.read())
         tf.import_graph_def(graph_def, name='')
@@ -220,7 +210,7 @@ while(cap.isOpened()):
     start_time = timeit.default_timer()
     count += 1
     ret, image_np = cap.read()
-    if count%30 == 0:
+    if count%5 == 0:
         ret, image_np = cap.read()
         if ret == True:
             start_time = timeit.default_timer()
@@ -386,9 +376,21 @@ while(cap.isOpened()):
                         ymin = py[person] 
                         ymax = (py[person] + hei[person])
                         
-                                            
+                        '''
+                        # Send results to ES
+                        for x in range(5):
+                            tdoc = {
+                                'timestamp': datetime.now(),
+                                'content': 'Test Message',
+                                'text': 'Can you hear me now?',
+                                'number': x,
+                            }
+                            es_post = es.index(index="test", doc_type="_doc", body=tdoc)
+                            print('ES document sent.')
+                            print(tdoc)
+                        '''                    
                         tdoc = {
-                            #'timestamp': datetime.now(),
+                            'timestamp': datetime.now(),
                             'content': 'Video information',
                             'text': 'Object detected.',
                             'xmin': xmin,
@@ -398,6 +400,10 @@ while(cap.isOpened()):
                          }
                     
                         # Send results to ES
+                        res = es.index(index=[ k for k,v in locals().items() if v is url][0].replace("_","-").lower(), doc_type="_doc",body=tdoc)
+                        print("ES document sent")
+                        print(tdoc)
+                        
                         if url == RECEPTION_EAST:
                             res = es.index(index="reception-east", doc_type="_doc", body=tdoc)
                             print('ES document sent.')
@@ -410,10 +416,11 @@ while(cap.isOpened()):
                             res = es.index(index="outside-west", doc_type="_doc", body=tdoc)
                             print('ES document sent.')
                             print(tdoc)
-                        elif url == LOCAL:
-                            res = es.index(index="test", doc_type="_doc", body=tdoc)
+                        elif url == TEST:
+                            es_post = es.index(index="test", doc_type="_doc", body=tdoc)
                             print('ES document sent.')
                             print(tdoc)
+                            
                             
                         # Save Full Image and Save Object Image
                         #cv2.imwrite('/tf_files/save_image/'+ str((sys.argv)[1]) +"-frame%d.jpg" % person_count, image_np)
@@ -441,5 +448,4 @@ while(cap.isOpened()):
         
 cap.release()
 out.release()
-cv2.destroyAllWindows()        
-
+cv2.destroyAllWindows() 
