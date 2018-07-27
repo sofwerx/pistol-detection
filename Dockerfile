@@ -1,6 +1,8 @@
 FROM tensorflow/tensorflow:1.5.0-devel-gpu
 RUN apt-get update && apt-get install -y \
-  git
+  git \
+  tar \
+  wget
 
 RUN apt-get install -y protobuf-compiler \
   python-lxml \
@@ -12,10 +14,10 @@ RUN apt-get install -y protobuf-compiler \
   libgtk-3-dev \
   libatlas-base-dev gfortran \
   python2.7-dev \
-  python-tk 
-  
+  python-tk
+
  RUN pip install opencv-python==3.4.0.12 requests elasticsearch
-  
+
 
 # change to tensorflow dir
 WORKDIR /tensorflow
@@ -36,7 +38,9 @@ RUN protoc object_detection/protos/*.proto --python_out=.
 RUN echo "export PYTHONPATH=${PYTHONPATH}:`pwd`:`pwd`/slim" >> ~/.bashrc
 RUN python setup.py install
 
-
-
+# Add faster_rcnn model
+WORKDIR models/research/object_detection
+wget http://download.tensorflow.org/models/object_detection/faster_rcnn_resnet101_coco_2017_11_08.tar.gz
+tar -xvf faster_rcnn_resnet101_coco_2017_11_08.tar.gz
 
 CMD ["echo", "Running tensorflow docker"]
