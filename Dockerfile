@@ -40,7 +40,9 @@ RUN python setup.py install
 
 # Add faster_rcnn model
 WORKDIR models/research/object_detection
-wget http://download.tensorflow.org/models/object_detection/faster_rcnn_resnet101_coco_2017_11_08.tar.gz
-tar -xvf faster_rcnn_resnet101_coco_2017_11_08.tar.gz
+RUN wget http://download.tensorflow.org/models/object_detection/faster_rcnn_resnet101_coco_2017_11_08.tar.gz
+RUN tar -xvf faster_rcnn_resnet101_coco_2017_11_08.tar.gz
+
+WORKDIR models/research
 
 CMD ["echo", "Running tensorflow docker"]
