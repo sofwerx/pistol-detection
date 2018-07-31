@@ -188,6 +188,10 @@ with tf.Session() as sess2:
             print('Took {} seconds to perform image recognition on people found'.format(timeit.default_timer() - start_time))
         cv2.imshow('frame',cv2.resize(image_np, (1024, 768)))
         if cv2.waitKey(500) & 0xFF == ord('q'):
+            os.remove(location+'/'+image)
+            os.remove(location+'/'+csv)
             break
+        os.remove(location+'/'+image)
+        os.remove(location+'/'+csv)
 sess2.close()    
 cv2.destroyAllWindows()    
