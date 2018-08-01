@@ -1,0 +1,2 @@
+This directory will store the frames and data taken from the camera.
+Those frames and data will be placed in the minio client and deleted from this directory.
