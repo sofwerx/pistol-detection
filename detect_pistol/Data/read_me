@@ -1,1 +1,2 @@
-This directory will store the frames and data taken from the minio client
+This directory will store the frames and data taken from the minio client.
+Once object detection has been performed on the frames, the frames and data will be deleted from this directory.
