@@ -23,10 +23,16 @@ nvidia-docker run --rm --network host --privileged -it -v ~/.Xauthority:/root/.X
 cd object_detection
 ```
 
-```
-cp /tf_files/person-camera.py .
-```
+For optimization, the object detection code has been split into two seperate scripts that can be run simulatenously, but should be run in seperate instances. Depending on which instance one is running, do the following:
 
+```
+cp /detect_pistol/person-camera-session-one.py .
+```
+or
+```
+cp /detect_pistol/person-camera-session-two.py .
+```
+then, for both:
 ```
 wget http://download.tensorflow.org/models/object_detection/faster_rcnn_resnet101_coco_2017_11_08.tar.gz
 ```
@@ -50,12 +56,12 @@ OUTSIDE_NORTH_EAST
 DIRTYWERX_RAMP
 
 
-Run session one, selecting which camera to use
+Run session one in its own instance, selecting which camera to use
 ```
 python person-camera-session-one.py RECEPTION_EAST
 ```
 
-Session two should be ran simultaneously with session one in a seperate instance.
+Session two can be ran simultaneously with session one in a seperate instance.
 ```
 python person-camera-session-two.py 
 ```
