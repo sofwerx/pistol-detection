@@ -35,7 +35,7 @@ wget http://download.tensorflow.org/models/object_detection/faster_rcnn_resnet10
 tar -xvf faster_rcnn_resnet101_coco_2017_11_08.tar.gz
 ```
 
-Select Camera and GPU Allocation
+Select Camera
 
 RECEPTION_EAST
 RECEPTION_WEST
@@ -49,6 +49,13 @@ OUTSIDE_NORTH
 OUTSIDE_NORTH_EAST
 DIRTYWERX_RAMP
 
+
+Run session one, selecting which camera to use
 ```
-python person-camera.py RECEPTION_EAST 100
+python person-camera-session-one.py RECEPTION_EAST
+```
+
+Session two should be ran simultaneously with session one in a seperate instance.
+```
+python person-camera-session-two.py 
 ```
