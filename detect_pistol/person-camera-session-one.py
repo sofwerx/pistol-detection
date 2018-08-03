@@ -56,7 +56,7 @@ OUTSIDE_NORTH_EAST="rtsp://admin:1qazxsw2!QAZXSW@@datascience.opswerx.org:20052"
 DIRTYWERX_RAMP="rtsp://admin:1qazxsw2!QAZXSW@@datascience.opswerx.org:20053"
 TEST="rtsp://admin:1qazxsw2!QAZXSW@@datascience.opswerx.org:20043" #!!!
 
-def notify(channelToken, isTtest=true):
+def notify(channelToken, isTest=true):
     """Sends a message to specified channel
     Channel values are the last 9 characters in the URL for a channel
     Example channel: C0JJACWSX (#general channel)
