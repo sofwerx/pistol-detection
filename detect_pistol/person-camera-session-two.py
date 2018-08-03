@@ -180,6 +180,7 @@ with tf.Session() as sess2:
             minioClient.fget_object('person-camera', image, image)
             minioClient.fget_object('person-camera', csv, csv)
         except NoSuchKey as err:
+            print(err) #comment this out if you don't want constant error messages
             continue
         except ResponseError as err:
             print(err)
