@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 import sys
 import numpy as np
 
+from slackclient import SlackClient
 from collections import defaultdict
 from io import StringIO
 from matplotlib import pyplot as plt
@@ -55,6 +56,24 @@ OUTSIDE_NORTH_EAST="rtsp://admin:1qazxsw2!QAZXSW@@datascience.opswerx.org:20052"
 DIRTYWERX_RAMP="rtsp://admin:1qazxsw2!QAZXSW@@datascience.opswerx.org:20053"
 TEST="rtsp://admin:1qazxsw2!QAZXSW@@datascience.opswerx.org:20043" #!!!
 
+def notify(channelToken, isTtest=true):
+    """Sends a message to specified channel
+    Channel values are the last 9 characters in the URL for a channel
+    Example channel: C0JJACWSX (#general channel)
+    DO NOT put the Slack token on Github or anywhere public. Instead, 
+    define the 75-character token as an environment variable using
+    `export SLACK_API_TOKEN=[insert slack token here, no brackets]`"""
+    slack_token = os.environ["SLACK_API_TOKEN"] 
+	sc = SlackClient(slack_token)
+	if isTest:
+		msgPrefix = "THIS IS A TEST"
+	else:
+		msgPrefix = "***WARNING***"
+	sc.api_call(
+	  "chat.postMessage",
+	  channel=channelToken,
+	  text="{}: A person with a gun has been detected on the premesis. The doors are being locked now.".format(msgPrefix)
+	)
 
 # Setup ES 
 try:
