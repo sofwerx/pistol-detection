@@ -74,7 +74,7 @@ except Exception as ex:
 
 
 # Camera Selection
-#url = globals()[str((sys.argv)[1])] #!!!
+url = globals()[str((sys.argv)[1])] #!!!
 
 
 # Science Thresholds
