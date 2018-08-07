@@ -56,8 +56,8 @@ DIRTYWERX_RAMP="rtsp://admin:1qazxsw2!QAZXSW@@datascience.opswerx.org:20053"
 TEST="rtsp://admin:1qazxsw2!QAZXSW@@datascience.opswerx.org:20043" #!!!
 
 #Gun type to detect
-PISTOL = True
-LONGGUN = False
+PISTOL = False
+LONGGUN = True
 
 # Setup ES 
 try:
@@ -85,11 +85,11 @@ person_gun_threshold = 0.60
 
 # paths to model and labels
 if(gun):
-    model = '/tf_files/retrained_graph.pb'
-    labels = "/tf_files/retrained_labels.txt"
-else:
     model = '/tf_files/retrained_graph_long_gun.pb'
     labels = "/tf_files/retrained_labels_long_gun.txt"
+else:
+    model = '/tf_files/retrained_graph.pb'
+    labels = "/tf_files/retrained_labels.txt"
 
 # Intialize Tensorflow session and gpu memory management
 config = tf.ConfigProto()
