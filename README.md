@@ -55,6 +55,10 @@ OUTSIDE_NORTH
 OUTSIDE_NORTH_EAST
 DIRTYWERX_RAMP
 
+Select Gun Type
+PISTOL
+LONGGUN
+
 
 Run session one in its own instance, selecting which camera to use
 ```
