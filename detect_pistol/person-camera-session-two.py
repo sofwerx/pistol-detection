@@ -55,6 +55,9 @@ OUTSIDE_NORTH_EAST="rtsp://admin:1qazxsw2!QAZXSW@@datascience.opswerx.org:20052"
 DIRTYWERX_RAMP="rtsp://admin:1qazxsw2!QAZXSW@@datascience.opswerx.org:20053"
 TEST="rtsp://admin:1qazxsw2!QAZXSW@@datascience.opswerx.org:20043" #!!!
 
+#Gun type to detect
+PISTOL = True
+LONGGUN = False
 
 # Setup ES 
 try:
@@ -69,18 +72,24 @@ except Exception as ex:
     print("Error: ", ex)
 
 
-# GPU Percentage
-#gpuAmount = int((sys.argv)[2]) * 0.1 #!!!
+# Gun Type selection
+gun = globals()[str((sys.argv[2])] #!!!
 
 
 # Camera Selection
 url = globals()[str((sys.argv)[1])] #!!!
 
-
 # Science Thresholds
 person_threshold = 0.50
 person_gun_threshold = 0.60
 
+# paths to model and labels
+if(gun):
+    model = '/tf_files/retrained_graph.pb'
+    labels = "/tf_files/retrained_labels.txt"
+else:
+    model = '/tf_files/retrained_graph_long_gun.pb'
+    labels = "/tf_files/retrained_labels_long_gun.txt"
 
 # Intialize Tensorflow session and gpu memory management
 config = tf.ConfigProto()
@@ -137,7 +146,7 @@ categories = label_map_util.convert_label_map_to_categories(label_map, max_num_c
 category_index = label_map_util.create_category_index(categories)
 
 # Object Recognition model
-label_lines = [line.rstrip() for line in tf.gfile.GFile("/tf_files/retrained_labels.txt")] #!!!
+label_lines = [line.rstrip() for line in tf.gfile.GFile(labels)] #!!!
 
 
 def initialSetup():
@@ -146,7 +155,7 @@ def initialSetup():
 
     # This takes 2-5 seconds to run
     # Unpersists graph from file
-    with tf.gfile.FastGFile('/tf_files/retrained_graph.pb', 'rb') as h: #!!!
+    with tf.gfile.FastGFile(model, 'rb') as h: #!!!
         graph_def = tf.GraphDef()
         graph_def.ParseFromString(h.read())
         tf.import_graph_def(graph_def, name='')
