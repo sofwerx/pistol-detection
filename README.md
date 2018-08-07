@@ -62,6 +62,7 @@ python person-camera-session-one.py RECEPTION_EAST
 ```
 
 Session two can be ran simultaneously with session one in a seperate instance.
+Choose which camera is being used and what object is being detected.
 ```
-python person-camera-session-two.py 
+python person-camera-session-two.py RECEPTION_EAST PISTOL
 ```
