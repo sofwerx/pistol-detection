@@ -23,6 +23,11 @@ nvidia-docker run --rm --network host --privileged -it -v ~/.Xauthority:/root/.X
 cd object_detection
 ```
 
+As it's unsafe for Slack API tokens to be shared publically, get the API token from https://api.slack.com/custom-integrations/legacy-tokens and export as an environment variable via
+```
+export SLACK_API_TOKEN=[75-char-token]
+```
+
 For optimization, the object detection code has been split into two seperate scripts that can be run simulatenously, but should be run in seperate instances. Depending on which instance one is running, do the following:
 
 ```

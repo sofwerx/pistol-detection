@@ -12,7 +12,8 @@ RUN apt-get install -y protobuf-compiler \
   libgtk-3-dev \
   libatlas-base-dev gfortran \
   python2.7-dev \
-  python-tk 
+  python-tk \
+  slackclient
   
  RUN pip install opencv-python==3.4.0.12 requests
   
