@@ -1,3 +1,9 @@
+
+# coding: utf-8
+
+# In[16]:
+
+
 #######################################################################
 ############################## Packages ###############################
 #######################################################################
@@ -13,6 +19,8 @@ import pandas as pd
 import cv2
 import glob
 import timeit
+import time
+import datetime
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -22,7 +30,6 @@ from io import StringIO
 from matplotlib import pyplot as plt
 from PIL import Image as img
 from IPython.display import Image, display, clear_output
-
 
 
 #######################################################################
@@ -186,7 +193,7 @@ while(True):
 
 
             xfov = 71
-            yfov = 44  
+            yfov = 44
             ch = 180
             imageHeight = int(height)
             imageWidth = int(width)
@@ -220,9 +227,9 @@ while(True):
             df5['y_loc'] = df5["y_min_t"] + df5['ob_mid_y']
             # Head
             df5['ob_head_y'] = df5['ob_hgt_y'] / 7.5 / 2
-            
+
             df5['y_head_loc'] = df5["y_min_t"] + df5['ob_head_y']
-  
+
 
             # Find object degree of angle, data is sorted by score, select person with highest score
             df5['object_x_angle'] = df5['x_loc'].apply(lambda x: -(imageWidthCenter - x) * pixelDegreeHorizontal)
@@ -238,25 +245,25 @@ while(True):
 
             for i in range(0,len(df6.index)):
 
-    
+
 
                 w = int(df6.iloc[i]['ob_wid_x'])
                 x = int(df6.iloc[i]['x_min_t'])
                 h = int(df6.iloc[i]['ob_hgt_y'])
                 y = int(df6.iloc[i]["y_min_t"])
 
-                HAOB = df6.iloc[i]['object_x_angle'] 
+                HAOB = df6.iloc[i]['object_x_angle']
                 HAOB_str = str(round(HAOB, 4))
-                
+
                 VAOB = df6.iloc[i]['object_y_angle']
                 VAOB_str = str(round(VAOB, 4))
-                
+
                 head_AOB = df6.iloc[i]['head_y_angle']
                 head_size = df6.iloc[i]['ob_head_y']
                 head_y  = df6.iloc[i]['y_head_loc']
 #                 print y,h,VAOB
 #                 print head_y, head_size,head_AOB
-   
+
 
                 #labelBuffer = int(df6.iloc[0]['y_min_t']) - int(df6.iloc[0]['ob_hgt_y'] * 0.1)
 
@@ -298,12 +305,12 @@ while(True):
 
 
 
-        
+
 ##################### Perform Pistol Draw Recognition #######################
 
 
         start_time = timeit.default_timer()
-        
+
         for person in range(0,5):
 
             with tf.Session() as sess2:
@@ -311,7 +318,7 @@ while(True):
                 # Feed the image_data as input to the graph and get first prediction
                 softmax_tensor = sess2.graph.get_tensor_by_name('final_result:0')
 
-               
+
 
                 # while True:
                 #             frame = grabVideoFeed()
@@ -328,14 +335,14 @@ while(True):
                 numpy_frame = cv2.normalize(numpy_frame.astype('float'), None, -0.5, .5, cv2.NORM_MINMAX)
                 numpy_final = np.expand_dims(numpy_frame, axis=0)
 
-        
+
                 # make prediciton
                 predictions = sess2.run(softmax_tensor, {'Mul:0': numpy_final})
-    
+
                 score = predictions.item(1)
                 gunScore = str(score)
 
- 
+
                 #cv2.rectangle(image_np, (px[person],py[person]), (px[person]+wid[person], py[person]+hei[person]), (0, 0, 255), 2)
                 #cv2.rectangle(image_np, (px[person],py[person]), (px[person]+wid[person], py[person]+hei[person]), (0, 255, 0), 2)
 
@@ -347,12 +354,27 @@ while(True):
                     # print
                     font = cv2.FONT_HERSHEY_SIMPLEX
                     cv2.putText(image_np, gunScore, (int(px[person]), labelBuffer), font, 0.8, (0, 255, 0), 2)
-                    
+
 
                     cv2.imwrite('save_image/' + "frame%d.jpg" % person_count, image_np)
                     print("Horizontal Angle" + str(pxa[person]) )
                     print(" Vertical Angle " + str(pya[person]))
-                    print(" Head Vertical Angle " + str(pyha[person]))        
+                    print(" Head Vertical Angle " + str(pyha[person]))
+                    
+                    current_time_s = datetime.datetime.now().timestamp()
+                    current_time_r = time.strftime("%Y-%m-%d %H:%M:%S", current_time_s)
+                    
+                    d = {'pt1' : {pd.Series([px[person],py[person]]), index = }
+                    #df2es = pd.DataFrame('time':[current_time_r],'pt1':[(px[person],py[person])], 'p2':[px[person]+wid[person], py[person]+ (int(head_hei[person]) * 2)])
+                    j2es = df2es.to_json(orient='records', lines=True)
+                    j2es1 = json.loads(j2es)
+                    
+                    url = 'https://elasticsearch.orange.opswerx.org'
+                    username = 'elastic' 
+                    password = 'diatonouscoggedkittlepins'
+                    headers = {'Content-Type': 'application/json', 'X-HTTP-Method-Overide': 'PUT', 'Accept-Charset': 'UTF-8'}
+                    r = requests.post(url, data=json.dumps(j2es1), headers=headers, auth=HTTPBasicAuth(username, password))
+
                     
                 #cv2.putText(frame, gunScore, (10, 200), font, 0.8, (0, 255, 0), 2)
                 sess2.close()
@@ -363,7 +385,8 @@ while(True):
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
-        
-        
+
+
 #                 print y,h,VAOB
 #                 print head_y, head_size,head_AOB
+
